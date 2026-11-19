@@ -1,0 +1,29 @@
+.role-bar { width: min(100% - 2rem, 90rem); margin: 0.75rem auto 0; display: flex; flex-wrap: wrap; gap: 0.7rem; justify-content: space-between; align-items: end; }
+.role-bar .demo { margin-left: 0; }
+#staff-picker { min-width: 12rem; }
+.report-count { display: inline-block; margin-left: 0.3rem; min-width: 1.3rem; padding-inline: 0.25rem; border-radius: 1rem; color: #19112d; background: var(--accent); text-align: center; font-size: 0.8rem; font-weight: 700; }
+.secondary-text, .task-meta, .report-time { color: var(--muted); }
+.table-title { margin-bottom: 0.65rem; }
+.inbox-list { list-style: none; margin: 0; padding: 0; }
+.inbox-item { display: grid; grid-template-columns: minmax(0, 1fr) max-content; align-items: center; gap: 0.55rem; padding: 0.65rem 0; border-top: 1px solid var(--border); }
+.inbox-item strong { display: block; }
+.inbox-item:last-child { padding-bottom: 0; }
+.inbox-item.is-new strong { color: var(--accent); }
+.report-time, .task-meta { font-size: 0.875rem; }
+.task-row { display: grid; grid-template-columns: minmax(0, 1fr) max-content; align-items: center; gap: 0.75rem; padding: 0.8rem 0; border-top: 1px solid var(--border); }
+.task-row h4 { margin: 0 0 0.2rem; font-size: 1rem; }
+.task-row:last-child { padding-bottom: 0; }
+.task-state { color: var(--accent); font-size: 0.875rem; }
+.task-state.task-done, #task-feedback { color: var(--good); }
+.task-state.task-late { color: #ffbf9e; }
+#task-feedback { margin-bottom: 0.65rem; }
+#task-dialog { width: min(100% - 2rem, 31rem); padding: 1.25rem; border: 1px solid var(--border); border-radius: 0.9rem; background: var(--panel); color: var(--text); }
+#task-dialog::backdrop { background: #060714ba; }
+#task-due, #task-description { padding: 0.55rem 0.7rem; border: 1px solid #3b4264; border-radius: 0.5rem; color: var(--text); background: #20263d; font: inherit; }
+#task-description { resize: vertical; }
+
+@media (max-width: 37rem) {
+  .role-bar { width: calc(100% - 1.5rem); }
+  .inbox-item, .task-row { grid-template-columns: 1fr; }
+  .task-row button { justify-self: start; }
+}

@@ -1,0 +1,21 @@
+.month-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 0.8rem; }
+.monthly-metrics { grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); }
+.monthly-metrics strong { color: #d8c7ff; font-variant-numeric: tabular-nums; }
+.employee-profile .monthly-metrics { margin-block: 0.85rem 1rem; }
+.month-bars { min-height: 9rem; }
+.order-leaders { margin: 0; padding-left: 1.6rem; }
+.order-leaders li { padding: 0.55rem 0; border-top: 1px solid var(--border); }
+.order-leaders li::marker { color: var(--accent); font-weight: 700; }
+.order-leaders li > div { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.4rem 0.8rem; }
+.order-leaders strong { color: var(--accent); }
+.score-method { color: var(--muted); font-size: 0.875rem; margin-top: 0.75rem; }
+.score-method summary { cursor: pointer; color: var(--accent); }
+.score-method p { max-width: 75ch; margin-top: 0.4rem; }
+.profit-breakdown { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: 0.65rem; margin: 0.85rem 0 0; }
+.profit-breakdown div { padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem; }
+.profit-breakdown dt { color: var(--muted); font-size: 0.875rem; }
+.profit-breakdown dd { color: var(--text); margin: 0.2rem 0 0; font-weight: 650; font-variant-numeric: tabular-nums; }
+.profit-breakdown .profit-loss dd, #network-month-stores .profit-loss { color: var(--danger); }
+#network-month-stores td:last-child { white-space: nowrap; }
+
+@media (max-width: 53rem) { .month-grid { grid-template-columns: 1fr; } }
