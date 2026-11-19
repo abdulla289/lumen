@@ -5,6 +5,7 @@ const staffName = byId("staff-name");
 const taskFilter = byId("task-filter");
 const taskDialog = byId("task-dialog");
 const assignForm = byId("assign-task-form");
+let assignmentFeedback = "assign-feedback";
 let activeRole = "home";
 const accountMenu = byId("account-menu");
 
@@ -23,7 +24,7 @@ function initialTeamData() {
       id: `demo-task-${index}`, store, description, due: now + days * day, done,
     })),
     reports: visits.filter((visit) => visit.status !== "planned").map((visit) => ({
-      id: `demo-report-${visit.id}`, rep: storeRecord(visit.store).rep,
+      id: `demo-report-${visit.id}`, rep: visitRep(visit),
       title: visit.status === "done" ? "Визит состоялся" : "Визит пропущен",
       detail: `${visit.store} · ${visitDate.format(visit.at)}`, at: visit.at, read: false,
     })),
@@ -63,7 +64,7 @@ function addReport(activity) {
 
 function repStats(rep) {
   const points = stores.filter((store) => store.rep === rep);
-  const schedule = visits.filter((visit) => storeRecord(visit.store).rep === rep);
+  const schedule = visits.filter((visit) => visitRep(visit) === rep);
   const tasks = team.tasks.filter((task) => storeRecord(task.store).rep === rep);
   const sales = points.reduce((total, store) => total + store.sales, 0);
   const plan = points.reduce((total, store) => total + store.plan, 0);
@@ -244,14 +245,18 @@ byId("send-summary").addEventListener("click", () => {
 });
 
 byId("task-store").replaceChildren(...stores.map(({ name, rep }) => new Option(`${name} · ${rep}`, name)));
-byId("assign-task").addEventListener("click", () => {
+function openTaskAssignment({ store, description = "", feedbackId = "assign-feedback" } = {}) {
+  assignmentFeedback = feedbackId;
   assignForm.reset();
+  if (store) byId("task-store").value = store;
+  byId("task-description").value = description;
   const due = byId("task-due");
   due.min = dateInputValue(Date.now() + 60000);
   due.value = dateInputValue(Date.now() + day);
   setFeedback("assign-task-error", "");
   taskDialog.showModal();
-});
+}
+byId("assign-task").addEventListener("click", () => openTaskAssignment());
 byId("cancel-task").addEventListener("click", () => taskDialog.close());
 assignForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -265,7 +270,7 @@ assignForm.addEventListener("submit", (event) => {
   team.tasks.push({ id: crypto.randomUUID(), store, description, due, done: false });
   const saved = saveTeamData();
   taskDialog.close();
-  setFeedback("assign-feedback", saved ? `Задача добавлена в кабинет сотрудника ${storeRecord(store).rep}.` : "Задача добавлена в этой вкладке. Браузер не сохранил изменения.");
+  setFeedback(assignmentFeedback, saved ? `Задача добавлена в кабинет сотрудника ${storeRecord(store).rep}.` : "Задача добавлена в этой вкладке. Браузер не сохранил изменения.");
   renderTeam();
 });
 

@@ -85,14 +85,27 @@ function monthTotals(rows) {
   for (const row of rows) {
     for (const key of Object.keys(totals)) totals[key] += row[key];
   }
+  return totals;
+}
+
+function efficiencyScore(totals) {
   const components = [
     [0.5, ratio(Math.min(totals.sales, totals.plan), totals.plan)],
     [0.3, ratio(totals.visitsDone, totals.visitsDone + totals.visitsMissed)],
     [0.2, ratio(totals.tasksDone, totals.tasksDue)],
   ].filter(([, value]) => value !== null);
-  const score = ratio(components.reduce((sum, [weight, value]) => sum + weight * value, 0),
+  return ratio(components.reduce((sum, [weight, value]) => sum + weight * value, 0),
     components.reduce((sum, [weight]) => sum + weight, 0));
-  return { ...totals, score };
+}
+
+function employeeMonthTotals(rows, rep, period) {
+  const totals = monthTotals(rows);
+  if (period.current) {
+    const assigned = visits.filter((visit) => visitRep(visit) === rep && dateInputValue(visit.at).startsWith(period.key));
+    totals.visitsDone = assigned.filter(({ status }) => status === "done").length;
+    totals.visitsMissed = assigned.filter(({ status }) => status === "missed").length;
+  }
+  return { ...totals, score: efficiencyScore(totals) };
 }
 
 function operatingProfit(totals) {
@@ -175,8 +188,7 @@ function renderNetworkMonth() {
   byId("network-month-stores").replaceChildren(...rows.map((row) => storeMonthRow(row, true)));
 }
 
-function renderMonthlyProfile(rows, metricsId, tableId) {
-  const stats = monthTotals(rows);
+function renderMonthlyProfile(rows, stats, metricsId, tableId) {
   fillMonthlyMetrics(metricsId, [
     ["Эффективность", showRatio(stats.score)],
     ["Выручка", money(stats.sales), `План ${money(stats.plan)}`],
@@ -191,21 +203,25 @@ function renderMonthlyProfile(rows, metricsId, tableId) {
 function renderEmployeeMonth() {
   const period = selectedPeriod("employee-month");
   const monthlyStores = stores.map((store) => monthStore(store, period));
-  const employees = reps.map((name) => ({ name, stats: monthTotals(monthlyStores.filter(({ rep }) => rep === name)) }))
+  const employees = reps.map((name) => {
+    const rows = monthlyStores.filter(({ rep }) => rep === name);
+    return { name, rows, stats: employeeMonthTotals(rows, name, period) };
+  })
     .sort((a, b) => (b.stats.score ?? -1) - (a.stats.score ?? -1));
   byId("employee-period-note").textContent = periodNote(period);
   byId("employee-month-comparison").replaceChildren(...employees.map(({ name, stats }) => reportRow([
     name, showRatio(stats.score), integer.format(stats.orders), money(stats.sales), showRatio(ratio(stats.sales, stats.plan)),
     `${stats.visitsDone} из ${stats.visitsDone + stats.visitsMissed}`, `${stats.tasksDone} из ${stats.tasksDue}`,
   ])));
-  renderMonthlyProfile(monthlyStores.filter(({ rep }) => rep === byId("employee-person").value), "employee-month-metrics", "employee-month-stores");
+  const selected = employees.find(({ name }) => name === byId("employee-person").value);
+  renderMonthlyProfile(selected.rows, selected.stats, "employee-month-metrics", "employee-month-stores");
 }
 
 function renderStaffMonth() {
   const period = selectedPeriod("staff-month");
   const rows = stores.filter(({ rep }) => rep === staffName.value).map((store) => monthStore(store, period));
   byId("staff-period-note").textContent = periodNote(period);
-  renderMonthlyProfile(rows, "staff-month-metrics", "staff-month-stores");
+  renderMonthlyProfile(rows, employeeMonthTotals(rows, staffName.value, period), "staff-month-metrics", "staff-month-stores");
 }
 
 for (const selector of monthlySelectors) {

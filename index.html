@@ -17,6 +17,7 @@
   <script src="monthly.js" defer></script>
   <script src="diagnostics.js" defer></script>
   <script src="freezers.js" defer></script>
+  <script src="alerts.js" defer></script>
 </head>
 <body>
   <header class="brand">
@@ -42,6 +43,7 @@
   </div>
   <nav class="dashboard-nav" id="manager-nav" aria-label="Кабинет руководителя">
     <button type="button" aria-controls="overview-view" aria-pressed="true">Обзор</button>
+    <button type="button" aria-controls="alerts-view" aria-pressed="false">Уведомления <span class="report-count" id="case-alert-count" hidden></span></button>
     <button type="button" aria-controls="monthly-view" aria-pressed="false">За месяц</button>
     <button type="button" aria-controls="diagnostics-view" aria-pressed="false">Причины</button>
     <button type="button" aria-controls="freezers-view" aria-pressed="false">Лари и трафик</button>
@@ -134,6 +136,17 @@
     </aside>
   </div>
 
+  <section class="operation-view" id="alerts-view" aria-labelledby="alerts-heading" hidden>
+    <header class="operation-heading">
+      <div><h2 id="alerts-heading">Уведомления об отклонениях</h2><p>Автоматическая проверка продаж, визитов и ларей при открытом дашборде.</p></div>
+      <button type="button" id="read-case-alerts" hidden>Отметить все прочитанными</button>
+    </header>
+    <section class="card" aria-label="Активные предупреждения">
+      <p id="case-alert-empty" class="secondary-text" hidden>Активных отклонений нет.</p>
+      <ul class="inbox-list case-alert-list" id="case-alert-list" aria-live="polite"></ul>
+    </section>
+  </section>
+
   <section class="operation-view" id="diagnostics-view" aria-labelledby="diagnostics-heading" hidden>
     <header class="operation-heading">
       <div><h2 id="diagnostics-heading">Причины отклонений</h2><p>План, заказы, визиты и наличие товара за две демо-недели</p></div>
@@ -169,6 +182,8 @@
       <section class="card" aria-labelledby="freezer-reason-heading">
         <h3 id="freezer-reason-heading">Диагностика точки</h3>
         <div id="freezer-reason" aria-live="polite"></div>
+        <button type="button" class="action-primary" id="assign-freezer-task" hidden>Назначить задачу</button>
+        <p id="freezer-task-feedback" class="task-state task-done" role="status" hidden></p>
       </section>
       <section class="card" aria-labelledby="freezer-zero-heading">
         <h3 id="freezer-zero-heading">Ларь установлен, продаж за день нет</h3>
@@ -297,6 +312,7 @@
         </table>
       </div>
     </section>
+  </section>
     <dialog id="task-dialog" aria-labelledby="task-dialog-title">
       <form class="visit-form" id="assign-task-form">
         <h3 id="task-dialog-title">Новая задача</h3>
@@ -310,7 +326,6 @@
         </div>
       </form>
     </dialog>
-  </section>
 
   <section class="operation-view" id="schedule-view" aria-labelledby="schedule-heading" hidden>
     <header class="operation-heading">

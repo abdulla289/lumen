@@ -19,6 +19,9 @@
 #task-feedback { margin-bottom: 0.65rem; }
 #task-dialog { width: min(100% - 2rem, 31rem); padding: 1.25rem; border: 1px solid var(--border); border-radius: 0.9rem; background: var(--panel); color: var(--text); }
 #task-dialog::backdrop { background: #060714ba; }
+#task-dialog button { padding: 0.45rem 0.7rem; border: 1px solid var(--border); border-radius: 0.5rem; background: #20263d; color: var(--text); font-size: 0.875rem; }
+#task-dialog button:hover { border-color: var(--accent); }
+#task-dialog .action-primary { background: #b29bff; color: #17112c; font-weight: 700; border-color: #b29bff; }
 #task-due, #task-description { padding: 0.55rem 0.7rem; border: 1px solid #3b4264; border-radius: 0.5rem; color: var(--text); background: #20263d; font: inherit; }
 #task-description { resize: vertical; }
 

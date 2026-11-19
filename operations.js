@@ -23,14 +23,21 @@ function demoVisits() {
   ];
 }
 
+function extraCaseVisits() {
+  const now = Math.floor(Date.now() / 60000) * 60000;
+  return ["Мерей", "Достык", "Самал", "Байтерек"].map((store, index) => ({
+    id: `case-missed-${index + 1}`, store, rep: "Айдана", at: now - (index + 2) * day, status: "missed",
+  }));
+}
+
 function loadVisits() {
   try {
     const saved = JSON.parse(localStorage.getItem(visitStorageKey));
-    if (Array.isArray(saved)) return saved;
+    if (Array.isArray(saved)) return [...saved, ...extraCaseVisits().filter((visit) => !saved.some(({ id }) => id === visit.id))];
   } catch {
     // A browser without storage access can still display the demo.
   }
-  return demoVisits();
+  return [...demoVisits(), ...extraCaseVisits()];
 }
 
 let visits = loadVisits();
@@ -44,6 +51,7 @@ const visitStore = byId("visit-store");
 const scheduleStatus = byId("schedule-status");
 const teamVisitRep = byId("team-visit-rep");
 const storeRecord = (name) => stores.find((store) => store.name === name);
+const visitRep = (visit) => visit.rep ?? storeRecord(visit.store).rep;
 
 function retainVisits(next, message = "", activity = null) {
   let persisted = true;
@@ -80,7 +88,7 @@ byId("open-reminders").addEventListener("click", () => {
 
 function renderReminders(now) {
   const alerts = visits
-    .filter((visit) => scheduleMode === "staff" && storeRecord(visit.store).rep === scheduleRepresentative && visit.status === "planned" && visit.at <= now + hour)
+    .filter((visit) => scheduleMode === "staff" && visitRep(visit) === scheduleRepresentative && visit.status === "planned" && visit.at <= now + hour)
     .sort((a, b) => a.at - b.at);
   const upcoming = alerts.filter((visit) => visit.at > now).length;
   const overdue = alerts.length - upcoming;
@@ -95,7 +103,7 @@ function renderReminders(now) {
   byId("reminder-list").replaceChildren(...alerts.map((visit) => {
     const time = visitDate.format(visit.at);
     const status = visit.at <= now ? "Отметьте итог визита" : "Скоро визит";
-    return makeElement("li", `${status} · ${visit.store} · ${storeRecord(visit.store).rep} · ${time}`);
+    return makeElement("li", `${status} · ${visit.store} · ${visitRep(visit)} · ${time}`);
   }));
 }
 
@@ -109,7 +117,7 @@ function visitButton(label, handler, primary = false) {
 function markVisit(id, status) {
   const visit = visits.find((entry) => entry.id === id);
   if (!visit || visit.at > Date.now() || visit.replacedBy) return;
-  const rep = storeRecord(visit.store).rep;
+  const rep = visitRep(visit);
   if (scheduleMode === "staff" && (rep !== scheduleRepresentative || visit.status !== "planned")) return;
   if (visit.status === status && visit.markedBy === scheduleMode) return;
   const updated = visits.map((entry) => entry.id === id ? { ...entry, status, markedBy: scheduleMode } : entry);
@@ -128,7 +136,7 @@ function saveCalendarEvent(visit) {
     "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Lumen//Visit//RU",
     "BEGIN:VEVENT", `UID:${visit.id}@tradecontrol`, `DTSTAMP:${eventTime(Date.now())}`,
     `DTSTART:${eventTime(visit.at)}`, `DTEND:${eventTime(visit.at + 30 * 60000)}`,
-    `SUMMARY:Визит · ${visit.store}`, `DESCRIPTION:Представитель · ${storeRecord(visit.store).rep}`,
+    `SUMMARY:Визит · ${visit.store}`, `DESCRIPTION:Представитель · ${visitRep(visit)}`,
     "BEGIN:VALARM", "ACTION:DISPLAY", "TRIGGER:-PT1H", "DESCRIPTION:Торговый визит через час",
     "END:VALARM", "END:VEVENT", "END:VCALENDAR", "",
   ].join("\r\n");
@@ -152,7 +160,7 @@ function renderVisit(visit, now) {
   const labels = { planned: "Запланирован", done: "Состоялся", missed: "Пропущен" };
   const status = makeElement("span", overdue ? "Ожидает отметки" : labels[visit.status], "visit-status");
   status.dataset.status = overdue ? "overdue" : visit.status;
-  info.append(makeElement("strong", visit.store), makeElement("p", `${store.city} · ${store.rep}`, "visit-meta"));
+  info.append(makeElement("strong", visit.store), makeElement("p", `${store.city} · ${visitRep(visit)}`, "visit-meta"));
   time.append(makeElement("p", visitDate.format(visit.at)), status);
   if (visit.markedBy) {
     time.append(makeElement("p", visit.markedBy === "manager" ? "Отметил руководитель" : "Отметил представитель", "visit-meta"));
@@ -183,7 +191,7 @@ function renderSchedule() {
   const now = Date.now();
   const filter = scheduleMode === "manager" ? teamVisitRep.value : scheduleRepresentative;
   const visible = visits.filter((visit) => {
-    const matchesRep = !filter || storeRecord(visit.store).rep === filter;
+    const matchesRep = !filter || visitRep(visit) === filter;
     const matchesStatus = !scheduleStatus.value || visit.status === scheduleStatus.value;
     return matchesRep && matchesStatus;
   }).sort((a, b) => a.at - b.at);
@@ -230,7 +238,8 @@ visitForm.addEventListener("submit", (event) => {
   const at = Date.parse(`${visitTime.value}:00+05:00`);
   const store = replacing?.store ?? visitStore.value;
   const assignedStore = storeRecord(store);
-  const permitted = scheduleMode === "manager" ? Boolean(replacing) : assignedStore?.rep === scheduleRepresentative;
+  const assignee = replacing ? visitRep(replacing) : assignedStore?.rep;
+  const permitted = scheduleMode === "manager" ? Boolean(replacing) : assignee === scheduleRepresentative;
   if (!assignedStore || !permitted) {
     showVisitError("Выберите торговую точку вашего профиля.");
     return;
@@ -239,7 +248,7 @@ visitForm.addEventListener("submit", (event) => {
     showVisitError("Выберите дату и время в будущем.");
     return;
   }
-  const conflict = visits.some((visit) => visit.status === "planned" && visit.at === at && storeRecord(visit.store).rep === assignedStore.rep);
+  const conflict = visits.some((visit) => visit.status === "planned" && visit.at === at && visitRep(visit) === assignee);
   if (conflict) {
     showVisitError("У представителя уже запланирован визит на это время.");
     return;
@@ -249,7 +258,7 @@ visitForm.addEventListener("submit", (event) => {
     showVisitError("Этот визит уже изменился. Закройте форму и проверьте расписание.");
     return;
   }
-  const newVisit = { id: crypto.randomUUID(), store, at, status: "planned" };
+  const newVisit = { id: crypto.randomUUID(), store, rep: assignee, at, status: "planned" };
   let updated = visits;
   if (original) {
     newVisit.rescheduledFrom = original.id;
@@ -258,7 +267,7 @@ visitForm.addEventListener("submit", (event) => {
   visitDialog.close();
   if (scheduleStatus.value && scheduleStatus.value !== "planned") scheduleStatus.value = "planned";
   retainVisits([...updated, newVisit], original ? "Визит перенесён. Исходная запись сохранена в истории." : "Визит добавлен в расписание.", {
-    rep: assignedStore.rep,
+    rep: assignee,
     title: original ? "Визит перенесён" : "Визит запланирован",
     detail: `${store} · ${visitDate.format(at)}`,
   });

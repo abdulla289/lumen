@@ -128,6 +128,12 @@ function renderFreezerView() {
   diagnosis.replaceChildren(reasonCard(freezerDiagnosis(record, typical)));
   const actions = freezerActions(record, typical);
   if (actions.length) diagnosis.append(diagnosticList("Что проверить", actions));
+  const assign = byId("assign-freezer-task");
+  assign.hidden = !actions.length;
+  assign.onclick = actions.length ? () => openTaskAssignment({
+    store: store.name, description: actions[0], feedbackId: "freezer-task-feedback",
+  }) : null;
+  setFeedback("freezer-task-feedback", "");
 
   byId("freezer-history").replaceChildren(...[...history].reverse().map((entry) => {
     const row = reportRow([freezerDayName(entry.date), integer.format(entry.visitors), integer.format(entry.units),

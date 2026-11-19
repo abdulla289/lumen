@@ -25,5 +25,10 @@
 #freezer-zero-empty { margin-top: 0.6rem; }
 #open-freezer-diagnostics { margin-top: 0.65rem; }
 #freezer-history .selected-freezer-day { background: #211f37; }
+#assign-freezer-task, #freezer-task-feedback { margin-top: 0.75rem; }
+.case-alert-list .inbox-item { grid-template-columns: minmax(0, 1fr) max-content; }
+.case-alert-list .inbox-item:first-child { border-top: 0; padding-top: 0; }
+.case-alert-list .secondary-text { font-size: 0.875rem; margin-top: 0.15rem; }
 
 @media (max-width: 52rem) { .diagnostics-grid { grid-template-columns: 1fr; } }
+@media (max-width: 37rem) { .case-alert-list .inbox-item { grid-template-columns: 1fr; } .case-alert-list button { justify-self: start; } }

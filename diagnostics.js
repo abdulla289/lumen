@@ -2,7 +2,7 @@
 
 const weekOrders = {
   "Арман": [20, 14],
-  "Мерей": [22, 24],
+  "Мерей": [20, 14],
   "Достык": [19, 20],
   "Самал": [20, 20],
   "Байтерек": [14, 15],
@@ -53,13 +53,16 @@ function shortfallRow(store) {
 
 function renderRepReasons() {
   const points = stores.filter((store) => store.rep === reasonRep.value);
-  const sales = points.reduce((sum, store) => sum + store.sales, 0);
-  const target = points.reduce((sum, store) => sum + store.plan, 0);
+  const { previous, sales, plan: target } = weeklyRepTotals(reasonRep.value);
   const below = points.filter((store) => store.sales < store.plan)
     .sort((a, b) => (b.plan - b.sales) - (a.plan - a.sales));
   const difference = sales - target;
   const summary = byId("rep-reason-summary");
   summary.replaceChildren(diagnosticKpi(showRatio(ratio(sales, target)), `${money(sales)} из ${money(target)}`, difference < 0 ? "negative" : "positive"));
+  if (previous) {
+    const change = (sales - previous) / previous;
+    summary.append(diagnosticKpi(signed.format(change), "Продажи к прошлой неделе", change < 0 ? "negative" : "positive"));
+  }
   if (difference < 0 && below.length) {
     const largest = below[0];
     const explanation = salesReason(largest, ...weekOrders[largest.name]);

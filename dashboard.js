@@ -2,9 +2,9 @@
 
 const stores = [
   { name: "Арман", city: "Актобе", rep: "Айдана", previous: 100000, sales: 70000, plan: 100000, visited: false, product: false, freezer: true },
-  { name: "Мерей", city: "Актобе", rep: "Айдана", previous: 85000, sales: 92000, plan: 90000, visited: true, product: true, freezer: true },
-  { name: "Достык", city: "Актобе", rep: "Данияр", previous: 76000, sales: 80000, plan: 79000, visited: true, product: true, freezer: true },
-  { name: "Самал", city: "Актобе", rep: "Данияр", previous: 102000, sales: 104000, plan: 100000, visited: true, product: true, freezer: false },
+  { name: "Мерей", city: "Актобе", rep: "Айдана", previous: 85000, sales: 59500, plan: 90000, visited: true, product: true, freezer: true },
+  { name: "Достык", city: "Актобе", rep: "Данияр", previous: 76000, sales: 80000, plan: 160000, visited: true, product: true, freezer: true },
+  { name: "Самал", city: "Актобе", rep: "Данияр", previous: 102000, sales: 104000, plan: 208000, visited: true, product: true, freezer: false },
   { name: "Байтерек", city: "Актобе", rep: "Алия", previous: 56000, sales: 58000, plan: 55000, visited: true, product: true, freezer: true },
   { name: "Арай", city: "Актобе", rep: "Алия", previous: 61000, sales: 65000, plan: 64000, visited: true, product: true, freezer: true },
 ];
@@ -22,6 +22,14 @@ const money = (amount) => `${integer.format(amount)} ₸`;
 const byId = (id) => document.getElementById(id);
 const representative = byId("representative");
 const storeSelect = byId("store");
+
+function weeklyRepTotals(name) {
+  return stores.filter(({ rep }) => rep === name).reduce((totals, store) => ({
+    previous: totals.previous + store.previous,
+    sales: totals.sales + store.sales,
+    plan: totals.plan + store.plan,
+  }), { previous: 0, sales: 0, plan: 0 });
+}
 
 function makeElement(tag, text, className) {
   const element = document.createElement(tag);
